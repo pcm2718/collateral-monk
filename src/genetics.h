@@ -4,7 +4,9 @@
 
 
 #include <time.h>
+#include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 
 
@@ -17,17 +19,37 @@
 
 
 char*
-generate_random_gene ( char* gene, unsigned int const size );
+generate_random_gene ( char* const gene, unsigned int const size );
+
+
+
+char* const
+convert_str_to_gene ( char* const str, unsigned int const size );
+
+
+
+char* const
+convert_gene_to_str ( char* const gene, unsigned int const size );
+
+
+
+char* const
+load_gene_from_file ( char* const gene, unsigned int const size, char const * const filename );
+
+
+
+char const * const
+dump_gene_to_file ( char const * const gene, unsigned int const size, char const * const filename );
 
 
 
 unsigned int
-serial_compute_mutation_score ( char const * gene_a, char const * gene_b, unsigned int const size );
+serial_compute_mutation_score ( char const * const gene_a, char const * const gene_b, unsigned int const size );
 
 
 
 unsigned int
-parallel_compute_mutation_score ( char const * gene_a, char const * gene_b, unsigned int const size );
+parallel_compute_mutation_score ( char const * const gene_a, char const * const gene_b, unsigned int const size );
 
 
 

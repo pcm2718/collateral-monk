@@ -6,7 +6,7 @@
 
 
 #define GENE_COUNT 4
-#define BASE_COUNT 8
+#define BASE_COUNT 80
 
 
 
