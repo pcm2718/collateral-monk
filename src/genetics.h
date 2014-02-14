@@ -8,13 +8,28 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+/*
+ * SPECIAL MAGIC SSE2 FUN!!!
+ */
+#include <emmintrin.h>
 
 
-#define U_BASE 0
+
 #define A_BASE 1
 #define C_BASE 2
 #define G_BASE 4
 #define T_BASE 8
+#define U_BASE 16
+
+
+
+char*
+allocate_gene ( unsigned int const size );
+
+
+
+void
+free_gene ( char* gene );
 
 
 

@@ -2,7 +2,7 @@ export OMPI_CC=clang
 
 MPI_C="mpicc"
 CFLAGS="-std=c99 -I src -g -Wall -Wextra -Werror"
-LFLAGS="-std=c99 -L obj"
+LFLAGS="-std=c99 -L obj -g"
 
 all: obj/main.o obj/genetics.o
 	$(MPI_C) $(FLAGS) -L obj obj/main.o obj/genetics.o -o bin/collateral-monk

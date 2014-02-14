@@ -3,7 +3,54 @@
 
 
 char*
-generate_random_gene ( char* const gene, unsigned int const size )
+allocate_gene ( unsigned int const gene_size )
+{
+  /*
+   * Allocate an array of __m128 large enough to hold gene_size
+   * characters.
+   * There's probably a better way to compute the size, so I'll fix that later.
+   */
+  //__m128* tmp_array = malloc ( sizeof ( __m128 ) * ( ( gene_size / 4 ) + ( ( gene_size % 4)  ? 1 : 0 ) ) );
+
+  /*
+   * Return the array as a pointer cast to 
+   */
+
+  /*
+   * Ignore code before this point.
+   */
+
+  /*
+   * Until further notice, this function will just allocate an
+   * aligned character array.
+   */
+
+
+  /*
+   * Allocate a character array of size gene_size and return its
+   * address. Not currently aligned.
+   */
+  return malloc ( sizeof ( char ) * gene_size );
+};
+
+
+
+void
+free_gene ( char* gene )
+{
+  /*
+   * This function just calls free on gene. Strictly speaking, this
+   * function may not be necessary, but I don't know if this is all
+   * I need to do to free up a __m128 array and if there is more to
+   * doing this it should be abstracted away from the user.
+   */
+  free ( gene );
+};
+
+
+
+char*
+generate_random_gene ( char* const gene, unsigned int const gene_size )
 {
   /*
    * Declare array of gene bases.
@@ -19,7 +66,7 @@ generate_random_gene ( char* const gene, unsigned int const size )
    * Assign a random base to each spot in the gene.
    * There might be a fast way to do this using SIMD.
    */
-  for ( int i = 0 ; i < size ; ++i )
+  for ( int i = 0 ; i < gene_size ; ++i )
     gene[i] = bases[ rand () % 4 ];
 
   /*
@@ -60,13 +107,8 @@ convert_str_to_gene ( char* const str, unsigned int const gene_size )
         str[i] = T_BASE;
         break;
 
-        /*
-         * This case is interesting, I can't decide whether this
-         * should be default behavior of the case statement or
-         * perhaps not implemented at all.
-         * I'll fix that later.
-         */
       case '-':
+      case '_':
         str[i] = U_BASE;
         break;
 
@@ -110,13 +152,6 @@ convert_gene_to_str ( char* const gene, unsigned int const gene_size )
         gene[i] = 'T';
         break;
 
-        /*
-         * Much like its counterpart in convert_to_gene, I can't
-         * decide whether this is correct, whether this should be
-         * the default behavior of this case statement, or if this
-         * shouldn't be implemented at all.
-         * Time will tell.
-         */
       case U_BASE:
         gene[i] = '-';
         break;
@@ -124,7 +159,9 @@ convert_gene_to_str ( char* const gene, unsigned int const gene_size )
       default:
         /*
          * Add some default behavior here.
+         * This code is temporary.
          */
+        gene[i] = 'Z';
         break;
       }
 
@@ -254,8 +291,11 @@ serial_compute_mutation_score ( char const * const gene_a, char const * const ge
 
   /*
    * Allocate the results gene.
+   * May want to do this using allocate_gene, depending on how much
+   * abstraction is needed.
    */
-  char* out = malloc ( sizeof ( char ) * gene_size );
+  //char* out = malloc ( sizeof ( char ) * gene_size );
+  char* out = allocate_gene ( gene_size );
 
   /*
    * Run the comparison with conventional constructs.
@@ -294,22 +334,21 @@ parallel_compute_mutation_score ( char const * const gene_a, char const * const 
 
   /*
    * Allocate the results gene.
+   * May want to do this using allocate_gene, depending on how much
+   * abstraction is needed.
    */
-  char* out = malloc ( sizeof ( char ) * gene_size );
+  //__m128* out = malloc ( sizeof ( char ) * gene_size );
+  //char* out = malloc ( sizeof ( char ) * gene_size );
+  char* out = allocate_gene ( gene_size );
 
   /*
-   * Run the comparison with SPECIAL MAGIC SIMD FUN!!!
-   * Fix this later.
+   * Run the comparison with SPECIAL MAGIC SSE2 FUN!!!
    */
-  for ( int i = 0 ; i < gene_size ; ++i )
+  for ( int i = 0 ; i < gene_size ; i+=4 )
     {
-      out[i] = gene_a[i] & gene_b[i];
-
-      if ( ! out[i] )
-        {
-          ++score;
-          out[i] = gene_a[i] | gene_b[i];
-        }
+      ( (__m128*)out )[i] =  _mm_and_si128 ( ( (__m128*)gene_a )[i], ( (__m128*)gene_b )[i] );
+      ( (__m128*)out )[i] = _mm_cmpeq_epi8 ( ( (__m128*)out    )[i], _mm_setzero_si128 ()   );
+      ( (__m128*)out )[i] =   _mm_or_si128 ( ( (__m128*)gene_a )[i], ( (__m128*)gene_b )[i] );
     }
 
   /*

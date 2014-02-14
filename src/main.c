@@ -16,14 +16,20 @@ main ( int argc, char** argv )
   /*
    * Declare array to hold GENE_COUNT genes (random character
    * sequences), each of size BASE_COUNT.
+   *
+   * May need function to grab __m128 from method in header.
+   * This is going to get ugly.
+   * This comment not currently accurate.
    */
-  char genes [GENE_COUNT][BASE_COUNT];
+  char** genes = malloc ( sizeof( char* ) * GENE_COUNT );
+  for ( int i = 0 ; i < GENE_COUNT ; ++i )
+    genes[i] = allocate_gene ( BASE_COUNT );
 
   /*
    * Seed random number generator with the current time.
-   * Find a better way to do this.
+   * Find a better way to do this, maybe with a genetics_init method.
    */
-  srand ( time (NULL) );
+  srand ( time ( NULL ) );
 
   /*
    * For each gene in genes, fill the gene with random bases.
@@ -49,6 +55,18 @@ main ( int argc, char** argv )
    * Probably generate some sort of report with timing information
    * here.
    */
+
+  /*
+   * genes is now dynamically allocated, so I have to deallocate it
+   * myself, along with its contents. The call to a library function
+   * may be unnecesary, but I'm keeping it until I can show
+   * otherwise.
+   *
+   * This is a hack.
+   */
+  for ( int i = 0 ; i < GENE_COUNT ; ++i )
+    free_gene ( genes[i] );
+  free ( genes );
 
   /*
    * Return success!
