@@ -21,7 +21,7 @@ main ( int argc, char** argv )
    * This is going to get ugly.
    * This comment not currently accurate.
    */
-  char** genes = malloc ( sizeof( char* ) * GENE_COUNT );
+  unsigned char** genes = malloc ( sizeof( unsigned char* ) * GENE_COUNT );
   for ( int i = 0 ; i < GENE_COUNT ; ++i )
     genes[i] = allocate_gene ( BASE_COUNT );
 
@@ -40,7 +40,7 @@ main ( int argc, char** argv )
   for ( int i = 0 ; i < 2 ; ++i )
     {
       for ( int j = 0 ; j < BASE_COUNT ; ++j )
-        printf("%x ", genes[i][j] & 0xff);
+        printf("%4x ", genes[i][j] & 0xff);
       printf("\n");
     }
 

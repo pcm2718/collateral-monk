@@ -21,50 +21,52 @@
 #define T_BASE 8
 #define U_BASE 16
 
+#define BASES { A_BASE, C_BASE, G_BASE, T_BASE, U_BASE };
 
 
-char*
+
+unsigned char*
 allocate_gene ( unsigned int const size );
 
 
 
 void
-free_gene ( char* gene );
+free_gene ( unsigned char* gene );
 
 
 
-char*
-generate_random_gene ( char* const gene, unsigned int const size );
+unsigned char*
+generate_random_gene ( unsigned char* const gene, unsigned int const size );
 
 
 
-char* const
-convert_str_to_gene ( char* const str, unsigned int const size );
+unsigned char* const
+convert_str_to_gene ( unsigned char* const str, unsigned int const size );
 
 
 
-char* const
-convert_gene_to_str ( char* const gene, unsigned int const size );
+unsigned char* const
+convert_gene_to_str ( unsigned char* const gene, unsigned int const size );
 
 
 
-char* const
-load_gene_from_file ( char* const gene, unsigned int const size, char const * const filename );
+unsigned char* const
+load_gene_from_file ( unsigned char* const gene, unsigned int const size, char const * const filename );
 
 
 
-char const * const
-dump_gene_to_file ( char const * const gene, unsigned int const size, char const * const filename );
-
-
-
-unsigned int
-serial_compute_mutation ( char const * const gene_a, char const * const gene_b, char * const gene_out, unsigned int const gene_size );
+unsigned char const * const
+dump_gene_to_file ( unsigned char const * const gene, unsigned int const size, char const * const filename );
 
 
 
 unsigned int
-parallel_compute_mutation ( char const * const gene_a, char const * const gene_b, char * const gene_out, unsigned int const gene_size );
+serial_compute_mutation ( unsigned char const * const gene_a, unsigned char const * const gene_b, unsigned char * const gene_out, unsigned int const gene_size );
+
+
+
+unsigned int
+parallel_compute_mutation ( unsigned char const * const gene_a, unsigned char const * const gene_b, unsigned char * const gene_out, unsigned int const gene_size );
 
 
 

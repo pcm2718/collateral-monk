@@ -2,41 +2,20 @@
 
 
 
-char*
+unsigned char*
 allocate_gene ( unsigned int const gene_size )
 {
-  /*
-   * Allocate an array of __m128 large enough to hold gene_size
-   * characters.
-   * There's probably a better way to compute the size, so I'll fix that later.
-   */
-  //__m128* tmp_array = malloc ( sizeof ( __m128 ) * ( ( gene_size / 4 ) + ( ( gene_size % 4)  ? 1 : 0 ) ) );
-
-  /*
-   * Return the array as a pointer cast to 
-   */
-
-  /*
-   * Ignore code before this point.
-   */
-
-  /*
-   * Until further notice, this function will just allocate an
-   * aligned character array.
-   */
-
-
   /*
    * Allocate a character array of size gene_size and return its
    * address. Not currently aligned.
    */
-  return malloc ( sizeof ( char ) * gene_size );
+  return malloc ( sizeof ( unsigned char ) * gene_size );
 };
 
 
 
 void
-free_gene ( char* gene )
+free_gene ( unsigned char* gene )
 {
   /*
    * This function just calls free on gene. Strictly speaking, this
@@ -49,25 +28,20 @@ free_gene ( char* gene )
 
 
 
-char*
-generate_random_gene ( char* const gene, unsigned int const gene_size )
+unsigned char*
+generate_random_gene ( unsigned char* const gene, unsigned int const gene_size )
 {
   /*
    * Declare array of gene bases.
    */
-  char bases [4] = { A_BASE, C_BASE, G_BASE, T_BASE };
-
-  /*
-   * Seed random number generator with current time.
-   */
-  //srand ( time ( NULL ) );
+  unsigned char bases [5] = BASES;
 
   /*
    * Assign a random base to each spot in the gene.
    * There might be a fast way to do this using SIMD.
    */
   for ( int i = 0 ; i < gene_size ; ++i )
-    gene[i] = bases[ rand () % 4 ];
+    gene[i] = bases[ rand () % 5 ];
 
   /*
    * Return the gene pointer, now with random bases.
@@ -77,8 +51,8 @@ generate_random_gene ( char* const gene, unsigned int const gene_size )
 
 
 
-char* const
-convert_str_to_gene ( char* const str, unsigned int const gene_size )
+unsigned char* const
+convert_str_to_gene ( unsigned char* const str, unsigned int const gene_size )
 {
   /*
    * This just loops over each character in the given string and does
@@ -125,8 +99,8 @@ convert_str_to_gene ( char* const str, unsigned int const gene_size )
 
 
 
-char* const
-convert_gene_to_str ( char* const gene, unsigned int const gene_size )
+unsigned char* const
+convert_gene_to_str ( unsigned char* const gene, unsigned int const gene_size )
 {
   /*
    * This just loops over each base in the given gene and does a
@@ -170,8 +144,8 @@ convert_gene_to_str ( char* const gene, unsigned int const gene_size )
 
 
 
-char* const
-load_gene_from_file ( char* const gene, unsigned int const gene_size, char const * const filename )
+unsigned char* const
+load_gene_from_file ( unsigned char* const gene, unsigned int const gene_size, char const * const filename )
 {
   /*
    * Open the file given in filename for reading. This is where we
@@ -204,8 +178,8 @@ load_gene_from_file ( char* const gene, unsigned int const gene_size, char const
 
 
 
-char const * const
-dump_gene_to_file ( char const * const gene, unsigned int const gene_size, char const * const filename )
+unsigned char const * const
+dump_gene_to_file ( unsigned char const * const gene, unsigned int const gene_size, char const * const filename )
 {
   /*
    * Open the file given in filename for appending. This is where we
@@ -225,12 +199,13 @@ dump_gene_to_file ( char const * const gene, unsigned int const gene_size, char 
    * allocate memory to hold the temporary string representation of
    * the gene.
    */
-  char* str = malloc ( sizeof ( char ) * gene_size );
+  //unsigned char* str = malloc ( sizeof ( unsigned char ) * gene_size );
+  unsigned char* str = allocate_gene ( gene_size );
 
   /*
-   * Copy the gene into str.
+   * Copy the unsigned char*into str.
    */
-  strncpy ( str, gene, gene_size );
+  memcpy ( str, gene, gene_size );
 
   /*
    * Convert str to the string representation.
@@ -265,7 +240,8 @@ dump_gene_to_file ( char const * const gene, unsigned int const gene_size, char 
    * We're done with str now, so we can deallocate it. Might do this
    * before writing the newline to the file.
    */
-  free ( str ) ;
+  //free ( str );
+  free_gene ( str );
 
   /*
    * Close the output file (of course).
@@ -282,7 +258,7 @@ dump_gene_to_file ( char const * const gene, unsigned int const gene_size, char 
 
 
 unsigned int
-serial_compute_mutation ( char const * const gene_a, char const * const gene_b, char * const gene_out, unsigned int const gene_size )
+serial_compute_mutation ( unsigned char const * const gene_a, unsigned char const * const gene_b, unsigned char * const gene_out, unsigned int const gene_size )
 {
   /*
    * Initialize the score to be zero.
@@ -300,7 +276,7 @@ serial_compute_mutation ( char const * const gene_a, char const * const gene_b, 
    * accommodate this optimization would be ugly and unclear, so I
    * have decided not to do so unless absolutely necessary.
    */
-  char* out = gene_out ? gene_out : allocate_gene ( gene_size );
+  unsigned char* out = gene_out ? gene_out : allocate_gene ( gene_size );
 
   /*
    * Run the serial scoring algorithm with conventional constructs.
@@ -334,7 +310,7 @@ serial_compute_mutation ( char const * const gene_a, char const * const gene_b, 
 
 
 unsigned int
-parallel_compute_mutation ( char const * const gene_a, char const * const gene_b, char * const gene_out, unsigned int const gene_size )
+parallel_compute_mutation ( unsigned char const * const gene_a, unsigned char const * const gene_b, unsigned char * const gene_out, unsigned int const gene_size )
 {
   /*
    * Initialize the score to be zero.
@@ -350,16 +326,24 @@ parallel_compute_mutation ( char const * const gene_a, char const * const gene_b
    * See the corresponding comment in serial_compute_mutation for a
    * more through explanation of this line.
    */
-  char* out = gene_out ? gene_out : allocate_gene ( gene_size );
+  unsigned char* out = gene_out ? gene_out : allocate_gene ( gene_size );
 
   /*
    * Run the comparison with SPECIAL MAGIC SSE2 FUN!!!
    */
   for ( int i = 0 ; i < gene_size ; i+=4 )
     {
-      ( (__m128*)gene_out )[i] =  _mm_and_si128 ( ( (__m128*)gene_a  )[i], ( (__m128*)gene_b )[i] );
-      ( (__m128*)gene_out )[i] = _mm_cmpeq_epi8 ( ( (__m128*)gene_out)[i], _mm_setzero_si128 ()   );
-      ( (__m128*)gene_out )[i] =   _mm_or_si128 ( ( (__m128*)gene_a  )[i], ( (__m128*)gene_b )[i] );
+      __m128 a_and_b = _mm_and_si128 ( ( (__m128*)gene_a  )[i], ( (__m128*)gene_b )[i] );
+      __m128 zero = _mm_setzero_si128 ();
+      __m128 comp = _mm_cmpeq_epi8 ( ( (__m128*)gene_out)[i], zero );
+      __m128 a_or_b = _mm_or_si128 ( ( (__m128*)gene_a  )[i], ( (__m128*)gene_b )[i] );
+      __m128 comp_and_a_or_b = _mm_and_si128 ( comp , a_or_b );
+      __m128 comp_and_a_or_b_or_a_and_b = _mm_or_si128 ( comp_and_a_or_b , a_and_b );
+
+
+      //( (__m129*)gene_out )[i] =  _mm_and_si128 ( ( (__m128*)gene_a  )[i], ( (__m128*)gene_b )[i] );
+      //( (__m128*)gene_out )[i] = _mm_cmpeq_epi8 ( ( (__m128*)gene_out)[i], _mm_setzero_si128 ()   );
+      //( (__m128*)gene_out )[i] =   _mm_or_si128 ( ( (__m128*)gene_a  )[i], ( (__m128*)gene_b )[i] );
     }
 
   /*
