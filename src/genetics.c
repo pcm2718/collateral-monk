@@ -282,7 +282,7 @@ dump_gene_to_file ( char const * const gene, unsigned int const gene_size, char 
 
 
 unsigned int
-serial_compute_mutation_score ( char const * const gene_a, char const * const gene_b, unsigned int const gene_size )
+serial_compute_mutation ( char const * const gene_a, char const * const gene_b, char * const gene_out, unsigned int const gene_size )
 {
   /*
    * Initialize the score to be zero.
@@ -290,15 +290,20 @@ serial_compute_mutation_score ( char const * const gene_a, char const * const ge
   unsigned int score = 0;
 
   /*
-   * Allocate the results gene.
-   * May want to do this using allocate_gene, depending on how much
-   * abstraction is needed.
+   * If the user has passed in a value for gene_out, then use that in
+   * the scoring algorithm for storing the parent gene. Otherwise,
+   * allocate a new gene of size gene_size for use in the scoring
+   * algorithm, as the user doesn't want a copy of the parent gene.
+   *
+   * Technically speaking, no gene_out array is necessary if we don't
+   * want to remember the parent gene, but making provisions to
+   * accommodate this optimization would be ugly and unclear, so I
+   * have decided not to do so unless absolutely necessary.
    */
-  //char* out = malloc ( sizeof ( char ) * gene_size );
-  char* out = allocate_gene ( gene_size );
+  char* out = gene_out ? gene_out : allocate_gene ( gene_size );
 
   /*
-   * Run the comparison with conventional constructs.
+   * Run the serial scoring algorithm with conventional constructs.
    */
   for ( int i = 0 ; i < gene_size ; ++i )
     {
@@ -312,9 +317,13 @@ serial_compute_mutation_score ( char const * const gene_a, char const * const ge
     }
 
   /*
-   * Deallocate the results gene.
+   * Deallocate the parent gene if gene_out is NULL, otherwise we
+   * have a *definite* memory leak (whereas returning the parent gene
+   * via gene_out only introduces the *possibility* of a memory leak,
+   * which would be the user's fault anyways).
    */
-  free ( out );
+  if ( ! gene_out )
+    free_gene ( out );
 
   /*
    * Return the mutation score.
@@ -325,7 +334,7 @@ serial_compute_mutation_score ( char const * const gene_a, char const * const ge
 
 
 unsigned int
-parallel_compute_mutation_score ( char const * const gene_a, char const * const gene_b, unsigned int const gene_size )
+parallel_compute_mutation ( char const * const gene_a, char const * const gene_b, char * const gene_out, unsigned int const gene_size )
 {
   /*
    * Initialize the score to be zero.
@@ -333,28 +342,34 @@ parallel_compute_mutation_score ( char const * const gene_a, char const * const 
   unsigned int score = 0;
 
   /*
-   * Allocate the results gene.
-   * May want to do this using allocate_gene, depending on how much
-   * abstraction is needed.
+   * If the user has passed in a value for gene_out, then use that in
+   * the scoring algorithm for storing the parent gene. Otherwise,
+   * allocate a new gene of size gene_size for use in the scoring
+   * algorithm.
+   *
+   * See the corresponding comment in serial_compute_mutation for a
+   * more through explanation of this line.
    */
-  //__m128* out = malloc ( sizeof ( char ) * gene_size );
-  //char* out = malloc ( sizeof ( char ) * gene_size );
-  char* out = allocate_gene ( gene_size );
+  char* out = gene_out ? gene_out : allocate_gene ( gene_size );
 
   /*
    * Run the comparison with SPECIAL MAGIC SSE2 FUN!!!
    */
   for ( int i = 0 ; i < gene_size ; i+=4 )
     {
-      ( (__m128*)out )[i] =  _mm_and_si128 ( ( (__m128*)gene_a )[i], ( (__m128*)gene_b )[i] );
-      ( (__m128*)out )[i] = _mm_cmpeq_epi8 ( ( (__m128*)out    )[i], _mm_setzero_si128 ()   );
-      ( (__m128*)out )[i] =   _mm_or_si128 ( ( (__m128*)gene_a )[i], ( (__m128*)gene_b )[i] );
+      ( (__m128*)gene_out )[i] =  _mm_and_si128 ( ( (__m128*)gene_a  )[i], ( (__m128*)gene_b )[i] );
+      ( (__m128*)gene_out )[i] = _mm_cmpeq_epi8 ( ( (__m128*)gene_out)[i], _mm_setzero_si128 ()   );
+      ( (__m128*)gene_out )[i] =   _mm_or_si128 ( ( (__m128*)gene_a  )[i], ( (__m128*)gene_b )[i] );
     }
 
   /*
-   * Deallocate the results gene.
+   * If gene_out is NULL, free out to avoid a memory leak.
+   *
+   * See the corresponding comment in serial_compute_mutation for a
+   * more through explanation of this line (and lulz).
    */
-  free ( out );
+  if ( ! gene_out )
+    free_gene ( out );
 
   /*
    * Return the mutation score.

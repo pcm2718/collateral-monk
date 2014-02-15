@@ -59,12 +59,12 @@ dump_gene_to_file ( char const * const gene, unsigned int const size, char const
 
 
 unsigned int
-serial_compute_mutation_score ( char const * const gene_a, char const * const gene_b, unsigned int const size );
+serial_compute_mutation ( char const * const gene_a, char const * const gene_b, char * const gene_out, unsigned int const gene_size );
 
 
 
 unsigned int
-parallel_compute_mutation_score ( char const * const gene_a, char const * const gene_b, unsigned int const size );
+parallel_compute_mutation ( char const * const gene_a, char const * const gene_b, char * const gene_out, unsigned int const gene_size );
 
 
 

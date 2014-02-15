@@ -6,7 +6,7 @@
 
 
 #define GENE_COUNT 4
-#define BASE_COUNT 80
+#define BASE_COUNT 10
 
 
 
@@ -44,8 +44,8 @@ main ( int argc, char** argv )
       printf("\n");
     }
 
-  printf( "Serial mutation score: %u\n", serial_compute_mutation_score ( genes[0], genes[1] , BASE_COUNT ) );
-  printf( "Parallel mutation score: %u\n", parallel_compute_mutation_score ( genes[0], genes[1] , BASE_COUNT ) );
+  printf( "Serial mutation score: %u\n", serial_compute_mutation ( genes[0], genes[1], NULL , BASE_COUNT ) );
+  //printf( "Parallel mutation score: %u\n", parallel_compute_mutation ( genes[0], genes[1], NULL , BASE_COUNT ) );
 
   /*
    * Do magic here.
