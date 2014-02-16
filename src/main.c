@@ -5,13 +5,13 @@
 
 
 
-#define GENE_COUNT 4
-#define BASE_COUNT 10
+#define GENE_COUNT 2
+#define BASE_COUNT 36
 
 
 
 int
-main ( int argc, char** argv )
+main ( )
 {
   /*
    * Declare array to hold GENE_COUNT genes (random character
@@ -45,7 +45,7 @@ main ( int argc, char** argv )
     }
 
   printf( "Serial mutation score: %u\n", serial_compute_mutation ( genes[0], genes[1], NULL , BASE_COUNT ) );
-  //printf( "Parallel mutation score: %u\n", parallel_compute_mutation ( genes[0], genes[1], NULL , BASE_COUNT ) );
+  printf( "Parallel mutation score: %u\n", parallel_compute_mutation ( genes[0], genes[1], NULL , BASE_COUNT ) );
 
   /*
    * Do magic here.

@@ -40,7 +40,7 @@ generate_random_gene ( unsigned char* const gene, unsigned int const gene_size )
    * Assign a random base to each spot in the gene.
    * There might be a fast way to do this using SIMD.
    */
-  for ( int i = 0 ; i < gene_size ; ++i )
+  for ( unsigned int i = 0 ; i < gene_size ; ++i )
     gene[i] = bases[ rand () % 5 ];
 
   /*
@@ -51,14 +51,14 @@ generate_random_gene ( unsigned char* const gene, unsigned int const gene_size )
 
 
 
-unsigned char* const
+unsigned char*
 convert_str_to_gene ( unsigned char* const str, unsigned int const gene_size )
 {
   /*
    * This just loops over each character in the given string and does
    * a simple substitution to generate the corresponding gene.
    */
-  for ( int i = 0 ; i < gene_size ; ++i )
+  for ( unsigned int i = 0 ; i < gene_size ; ++i )
     switch ( str[i] )
       {
       case 'A':
@@ -99,7 +99,7 @@ convert_str_to_gene ( unsigned char* const str, unsigned int const gene_size )
 
 
 
-unsigned char* const
+unsigned char*
 convert_gene_to_str ( unsigned char* const gene, unsigned int const gene_size )
 {
   /*
@@ -107,7 +107,7 @@ convert_gene_to_str ( unsigned char* const gene, unsigned int const gene_size )
    * simple substitution to generate a coresponding string. Note that
    * bases are always converted to uppercase.
    */
-  for ( int i = 0 ; i < gene_size ; ++i )
+  for ( unsigned int i = 0 ; i < gene_size ; ++i )
     switch ( gene[i] )
       {
       case A_BASE:
@@ -144,7 +144,7 @@ convert_gene_to_str ( unsigned char* const gene, unsigned int const gene_size )
 
 
 
-unsigned char* const
+unsigned char*
 load_gene_from_file ( unsigned char* const gene, unsigned int const gene_size, char const * const filename )
 {
   /*
@@ -159,6 +159,12 @@ load_gene_from_file ( unsigned char* const gene, unsigned int const gene_size, c
    */
   if ( ! infile )
     return NULL;
+
+  /*
+   * Just avoiding a unused variable error here.
+   */
+  int x = gene_size;
+  ++x;
 
   /*
    * I don't know what input files look like yet, so I'm going to
@@ -178,7 +184,7 @@ load_gene_from_file ( unsigned char* const gene, unsigned int const gene_size, c
 
 
 
-unsigned char const * const
+unsigned char const *
 dump_gene_to_file ( unsigned char const * const gene, unsigned int const gene_size, char const * const filename )
 {
   /*
@@ -219,7 +225,7 @@ dump_gene_to_file ( unsigned char const * const gene, unsigned int const gene_si
    * an error is detected via EOF return. I may need to fix this
    * error condition.
    */
-  for ( int i = 0 ; i < gene_size ; ++i )
+  for ( unsigned int i = 0 ; i < gene_size ; ++i )
     if ( fputc ( str[i] , outfile ) == EOF )
       {
         fclose ( outfile );
@@ -281,7 +287,7 @@ serial_compute_mutation ( unsigned char const * const gene_a, unsigned char cons
   /*
    * Run the serial scoring algorithm with conventional constructs.
    */
-  for ( int i = 0 ; i < gene_size ; ++i )
+  for ( unsigned int i = 0 ; i < gene_size ; ++i )
     {
       out[i] = gene_a[i] & gene_b[i];
 
@@ -329,22 +335,40 @@ parallel_compute_mutation ( unsigned char const * const gene_a, unsigned char co
   unsigned char* out = gene_out ? gene_out : allocate_gene ( gene_size );
 
   /*
+   * Allocate a few temporary variables as static to improve
+   * perfomrance. May need to allocate more variables.
+   */
+  //static __m128 BIG_ZERO = 0;
+  __m128 BIG_ZERO = _mm_set1_pd (0.0);
+  static __m128 x, a, b;
+
+  /*
    * Run the comparison with SPECIAL MAGIC SSE2 FUN!!!
    */
-  for ( int i = 0 ; i < gene_size ; i+=4 )
+  int i = 0;
+  for ( ; gene_size - i >= 16 ; i+=16 )
     {
-      __m128 a_and_b = _mm_and_si128 ( ( (__m128*)gene_a  )[i], ( (__m128*)gene_b )[i] );
-      __m128 zero = _mm_setzero_si128 ();
-      __m128 comp = _mm_cmpeq_epi8 ( ( (__m128*)gene_out)[i], zero );
-      __m128 a_or_b = _mm_or_si128 ( ( (__m128*)gene_a  )[i], ( (__m128*)gene_b )[i] );
-      __m128 comp_and_a_or_b = _mm_and_si128 ( comp , a_or_b );
-      __m128 comp_and_a_or_b_or_a_and_b = _mm_or_si128 ( comp_and_a_or_b , a_and_b );
+      memcpy ( &a , gene_a + i , sizeof ( __m128 ) );
+      memcpy ( &b , gene_b + i , sizeof ( __m128 ) );
 
+      x = _mm_and_si128 ( a , b );
 
-      //( (__m129*)gene_out )[i] =  _mm_and_si128 ( ( (__m128*)gene_a  )[i], ( (__m128*)gene_b )[i] );
-      //( (__m128*)gene_out )[i] = _mm_cmpeq_epi8 ( ( (__m128*)gene_out)[i], _mm_setzero_si128 ()   );
-      //( (__m128*)gene_out )[i] =   _mm_or_si128 ( ( (__m128*)gene_a  )[i], ( (__m128*)gene_b )[i] );
+      /*
+       * There might be a better way to do this.
+       */
+      for ( int j = 0 ; j < 16 ; ++j )
+        score += ! ( (unsigned char*)(&x) )[j];
+
+      x = _mm_or_si128 ( _mm_and_si128 ( _mm_cmpeq_epi8 ( BIG_ZERO , x ) , _mm_or_si128 ( a , b ) ) , x );
+      memcpy ( out + i , &x , sizeof( __m128 ) );
     }
+
+  /*
+   * Finish off the comparison by running any remaining bases through
+   * the serial_compute_mutation, as SSE can only process blocks of 
+   * 16 bases.
+   */
+  score += serial_compute_mutation ( gene_a + i , gene_b + i , out + i , gene_size - i );
 
   /*
    * If gene_out is NULL, free out to avoid a memory leak.

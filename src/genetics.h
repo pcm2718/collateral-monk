@@ -40,22 +40,22 @@ generate_random_gene ( unsigned char* const gene, unsigned int const size );
 
 
 
-unsigned char* const
+unsigned char*
 convert_str_to_gene ( unsigned char* const str, unsigned int const size );
 
 
 
-unsigned char* const
+unsigned char*
 convert_gene_to_str ( unsigned char* const gene, unsigned int const size );
 
 
 
-unsigned char* const
+unsigned char*
 load_gene_from_file ( unsigned char* const gene, unsigned int const size, char const * const filename );
 
 
 
-unsigned char const * const
+unsigned char const *
 dump_gene_to_file ( unsigned char const * const gene, unsigned int const size, char const * const filename );
 
 

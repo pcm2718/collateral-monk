@@ -1,0 +1,37 @@
+\documentclass{article}
+\usepackage{homework}
+
+\begin{document}
+
+\hwtitle{Report for Assignment \# 2}{CS 5500}{Parker Michaelson}
+
+\namesection{Status}
+
+The current status of the assignment is as follows:
+
+\begin{itemize}
+        \item Genomes have been defined in terms of unsigned character strings ({\tt unsigned char*}).
+        \item Facilities for generating random genomes of a given size exist ({\tt generate\_random\_gene}).
+        \item A serial version of the mutation scoring algorithm has been implemented ({\tt serial\_mutation\_score}).
+        \item A parallelized version of the above algorithm has been implemented using {\tt SIMD} instructions ({\tt serial\_mutation\_score}).
+        \item A {\tt Node} type has been defined for the construction of phylogenetic trees.
+        \item The implementation of a library for working with phylogenetic trees is partially completed.
+        \item The current version of the code compiles, running the code demonstrates the serial and parallel scoring algorithms on pair of random genomes (execute {\tt bin/collateral-monk}).
+\end{itemize}
+
+\namesection{Plan}
+
+The project could be completed with the following steps:
+
+\begin{itemize}
+        \item Complete the implementation of the phylogenetic tree library. This includes writing a tree destructor and finishing the algorithm used to build a phylogenetic tree, followed by refactoring and debugging.
+        \item Complete the algorithm used to pick a near-optimum phylogenetic tree. The algorithm currently planned is brute force in nature.
+        \item Write top-level code to demonstrate the phylogenetic tree and for the purpose of timing the mutation scoring algorithms.
+        \item General refactoring and commenting over the whole codebase.
+\end{itemize}
+
+\namesection{Conclusion}
+
+It should be possible to complete this assignment in a way that exceeds expectations with probablilty \(\% 95\) by Sunday, and with certainty by Monday.
+
+\end{document}
