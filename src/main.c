@@ -6,7 +6,7 @@
 
 
 
-#define GENE_COUNT 16
+#define GENE_COUNT 32
 #define BASE_COUNT 64
 
 

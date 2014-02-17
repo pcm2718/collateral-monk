@@ -53,15 +53,18 @@ build_phylogenetic_tree ( unsigned char ** gene_list , unsigned int const gene_s
    * One Node to take them all and within the tree bind them.
    * In the land of Unix, where shadows lie.
    */
-  for ( unsigned int i = 0 ; i + 1 < gene_count ; ++i )
+  for ( unsigned int j = 1 ; j < gene_count ; j*=2 )
     {
-      unsigned char* new_gene = allocate_gene ( gene_size );
-      parallel_compute_mutation ( gene_queue[i]->gene , gene_queue[i+1]->gene , new_gene , gene_size );
+      for ( unsigned int i = j - 1 ; i + j < gene_count ; i += ( 2 * j ) )
+        {
+          unsigned char* new_gene = allocate_gene ( gene_size );
+          parallel_compute_mutation ( gene_queue[i]->gene , gene_queue[i+j]->gene , new_gene , gene_size );
 
-      gene_queue[i+1] = build_node ( gene_queue[i] , gene_queue[i+1] , new_gene, gene_size );
-      gene_queue[i] = NULL;
+          gene_queue[i+j] = build_node ( gene_queue[i] , gene_queue[i+j] , new_gene, gene_size );
+          gene_queue[i] = NULL;
 
-      free ( new_gene );
+          free ( new_gene );
+        }
     }
 
   /*
