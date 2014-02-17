@@ -3,13 +3,15 @@
 
 
 Node*
-build_node ( Node const * const left , Node const * const right , unsigned char const * const gene )
+build_node ( Node * const left , Node * const right , unsigned char const * const gene, unsigned int const gene_size )
 {
-  Node* new_node = malloc ( sizeof ( Node* ) );
+  Node* new_node = malloc ( sizeof ( Node ) );
 
   new_node->left = left;
   new_node->right = right;
-  new_node->gene = gene;
+
+  new_node->gene = allocate_gene ( gene_size );
+  memcpy ( new_node->gene , gene , gene_size );
 
   return new_node;
 };
@@ -19,13 +21,14 @@ build_node ( Node const * const left , Node const * const right , unsigned char 
 void
 free_node ( Node* node )
 {
+  free_gene ( node->gene );
   free ( node );
 };
 
 
 
 Node*
-build_phylogenetic_tree ( unsigned char const * const * const gene_list , unsigned int const gene_size, unsigned int const gene_count )
+build_phylogenetic_tree ( unsigned char ** gene_list , unsigned int const gene_size, unsigned int const gene_count )
 {
   /*
    * Allocate a queue of nodes of size gene_count.
@@ -35,9 +38,9 @@ build_phylogenetic_tree ( unsigned char const * const * const gene_list , unsign
   /*
    * Fill the queue with genes from gene_list.
    */
-  for ( int i = 0 ; i < gene_count ; ++i )
+  for ( unsigned int i = 0 ; i < gene_count ; ++i )
     {
-      gene_queue[i] = build_node ( NULL , NULL , gene_list[i] ); 
+      gene_queue[i] = build_node ( NULL , NULL , gene_list[i] , gene_size ); 
     }
 
   /*
@@ -50,51 +53,29 @@ build_phylogenetic_tree ( unsigned char const * const * const gene_list , unsign
    * One Node to take them all and within the tree bind them.
    * In the land of Unix, where shadows lie.
    */
-  for ( int i = 0 ; i < ; ++i )
+  for ( unsigned int i = 0 ; i + 1 < gene_count ; ++i )
     {
+      unsigned char* new_gene = allocate_gene ( gene_size );
+      parallel_compute_mutation ( gene_queue[i]->gene , gene_queue[i+1]->gene , new_gene , gene_size );
+
+      gene_queue[i+1] = build_node ( gene_queue[i] , gene_queue[i+1] , new_gene, gene_size );
+      gene_queue[i] = NULL;
+
+      free ( new_gene );
     }
 
   /*
-   * Return the pointer to one Node to rule them all.
+   * We are now done with gene queue. Move the root node of the new
+   * tree to a variable.
+   */
+  Node* root = gene_queue[gene_count-1];
+  free ( gene_queue );
+
+  /*
+   * Return the pointer to the one Node to rule them all.
    * In the land of Unix, where shadows lie.
    */
-  return gene_queue[0];
-};
-
-{
-  /*
-   * Allocate the queue.
-   */
-  Node** gene_queue = malloc ( sizeof ( Node* ) * gene_count );
-
-  /*
-   * Load the queue with nodes.
-   */
-  for ( int i = 0 ; i < gene_count ; ++i )
-    {
-      gene_queue[i] = malloc ( sizeof ( Node ) );
-      gene_queue[i]->left = NULL;
-      gene_queue[i]->right = NULL;
-      gene_queue[i]->gene = genes[i];
-    }
-
-  /*
-   * Do a sort here.
-   *
-   * Need some sort of priority queue.
-   */
-
-  /*
-   * Build the tree from the queue.
-   */
-  for ( int i = 0 ; i < gene_count ; ++i )
-    {
-      Node* new_node = malloc ( sizeof ( Node* ) );
-
-      node_new_
-    }
-
-  return;
+  return root;
 };
 
 
@@ -111,9 +92,8 @@ free_phylogenetic_tree ( Node* node )
   /*
    * Destroy^H^H^H^H^H^H^H LIBERATE the left and right subtrees.
    */
-  destroy_phylogenetic_tree ( node->left );
-  destroy_phylogenetic_tree ( node->right );
-  //free_gene ( node->gene );
+  free_phylogenetic_tree ( node->left );
+  free_phylogenetic_tree ( node->right );
 
   /*
    * Commit suicide.
@@ -134,19 +114,23 @@ print_phylogenetic_tree ( Node const * const node , int depth )
   if ( ! node )
     return;
 
-  print_tree_in_order ( node->left , depth + 1 );
+  print_phylogenetic_tree ( node->left , depth + 1 );
 
-  for ( int i = 0 ; i < depth ; ++i )
-    puts ( "    " );
+  for ( int i = 0 ; i < depth - 1 ; ++i )
+    printf ( "    " );
+  printf ( "|-> " );
 
   unsigned char* str = malloc ( sizeof ( unsigned char ) * STR_PRINT_LENGTH );
   memcpy ( str , node->gene , STR_PRINT_LENGTH );
+  convert_gene_to_str ( str , STR_PRINT_LENGTH );
 
   printf ( "%.16s" , str );
 
   free ( str );
 
-  print_tree_in_order ( node->right , depth + 1 );
+  putchar ( '\n' );
+
+  print_phylogenetic_tree ( node->right , depth + 1 );
 };
 
 
@@ -154,4 +138,8 @@ print_phylogenetic_tree ( Node const * const node , int depth )
 unsigned int
 score_phylogenetic_tree ( Node* node )
 {
+  Node* x = node;
+  ++x;
+
+  return 0;
 };

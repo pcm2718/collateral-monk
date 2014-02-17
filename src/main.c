@@ -2,11 +2,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "genetics.h"
+#include "phylogenetics.h"
 
 
 
-#define GENE_COUNT 2
-#define BASE_COUNT 36
+#define GENE_COUNT 16
+#define BASE_COUNT 64
 
 
 
@@ -37,19 +38,34 @@ main ( )
   for ( int i = 0 ; i < GENE_COUNT ; ++i )
     generate_random_gene ( genes[i], BASE_COUNT );
 
+  printf ( "\n\n" );
+
+  printf( "Comparing first two random genomes." );
+  printf( "\n" );
   for ( int i = 0 ; i < 2 ; ++i )
     {
       for ( int j = 0 ; j < BASE_COUNT ; ++j )
-        printf("%4x ", genes[i][j] & 0xff);
+        printf("%2x ", genes[i][j] & 0xff);
       printf("\n");
     }
-
+  printf( "\n\n" );
   printf( "Serial mutation score: %u\n", serial_compute_mutation ( genes[0], genes[1], NULL , BASE_COUNT ) );
   printf( "Parallel mutation score: %u\n", parallel_compute_mutation ( genes[0], genes[1], NULL , BASE_COUNT ) );
 
+  printf( "\n\n" );
+
+  printf( "Now printing parsimony tree." );
+
+  printf( "\n\n" );
+
   /*
-   * Do magic here.
+   * Now build and print a BRAND NEW 1967 PHYLOGENETIC TREE!
    */
+  Node* tree = build_phylogenetic_tree ( genes , BASE_COUNT , GENE_COUNT );
+  print_phylogenetic_tree ( tree , 1 );
+  free_phylogenetic_tree ( tree );
+
+  printf( "\n\n" );
 
   /*
    * Probably generate some sort of report with timing information
