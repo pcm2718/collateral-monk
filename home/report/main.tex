@@ -13,25 +13,25 @@ The current status of the assignment is as follows:
         \item Genomes have been defined in terms of unsigned character strings ({\tt unsigned char*}).
         \item Facilities for generating random genomes of a given size exist ({\tt generate\_random\_gene}).
         \item A serial version of the mutation scoring algorithm has been implemented ({\tt serial\_mutation\_score}).
-        \item A parallelized version of the above algorithm has been implemented using {\tt SIMD} instructions ({\tt serial\_mutation\_score}).
+        \item A parallelized version of the above algorithm has been implemented using {\tt SIMD} instructions ({\tt parallel\_mutation\_score}).
         \item A {\tt Node} type has been defined for the construction of phylogenetic trees.
         \item The implementation of a library for working with phylogenetic trees is partially completed.
         \item The current version of the code compiles, running the code demonstrates the serial and parallel scoring algorithms on pair of random genomes (execute {\tt bin/collateral-monk}).
+        \item The phylogenetic tree library is almost fully implemented.
 \end{itemize}
 
-\namesection{Plan}
-
-The project could be completed with the following steps:
+The project could be completed fully with the following steps:
 
 \begin{itemize}
-        \item Complete the implementation of the phylogenetic tree library. This includes writing a tree destructor and finishing the algorithm used to build a phylogenetic tree, followed by refactoring and debugging.
         \item Complete the algorithm used to pick a near-optimum phylogenetic tree. The algorithm currently planned is brute force in nature.
-        \item Write top-level code to demonstrate the phylogenetic tree and for the purpose of timing the mutation scoring algorithms.
-        \item General refactoring and commenting over the whole codebase.
+        \item Add timing code to generate timing information from the top-level code instead of using the {\tt time} command.
 \end{itemize}
 
-\namesection{Conclusion}
+\namesection{Results}
 
-It should be possible to complete this assignment in a way that exceeds expectations with probablilty \(\% 95\) by Sunday, and with certainty by Monday.
+This demonstration program uses genomes of size 4096, with 2048 genomes being added to the tree.
+Due to the program design methodology, an approximation to the number of times the utilized mutation scoring algorithm is called is \(n \log(n)\), where \(n\) is the number of genomes used in creating the tree.
+Compiling without optimization ({\tt -O0}), the average time to execute the program was between 120 and 140 milliseconds with parallel instructions, whereas the average time taken to execute the program in serial was between 160 and 190 milliseconds.
+This constitutes a {\it minimum} reduction in scoring time between serial and parallel algorithms of approximately \(\% 12\).
 
 \end{document}

@@ -6,8 +6,8 @@
 
 
 
-#define GENE_COUNT 32
-#define BASE_COUNT 64
+#define GENE_COUNT 2048
+#define BASE_COUNT 4096
 
 
 

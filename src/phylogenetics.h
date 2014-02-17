@@ -12,7 +12,6 @@
 
 
 #define STR_PRINT_LENGTH 16
-#define STR_LEVEL_INDENT 4
 
 
 
